@@ -319,6 +319,23 @@ if history_rows:
     )
     bench_leaderboard.index += 1
     st.dataframe(bench_leaderboard, use_container_width=True)
+
+    st.subheader("🏅 Best & Worst Gameweeks")
+    idx_best = all_history.groupby("Team")["points"].idxmax()
+    idx_worst = all_history.groupby("Team")["points"].idxmin()
+    best = all_history.loc[idx_best, ["Team", "Manager", "event", "points"]].rename(
+        columns={"event": "Best GW", "points": "Best Pts"}
+    )
+    worst = all_history.loc[idx_worst, ["Team", "event", "points"]].rename(
+        columns={"event": "Worst GW", "points": "Worst Pts"}
+    )
+    bw_df = (
+        best.merge(worst[["Team", "Worst GW", "Worst Pts"]], on="Team")
+        .sort_values("Best Pts", ascending=False)
+        .reset_index(drop=True)
+    )
+    bw_df.index += 1
+    st.dataframe(bw_df, use_container_width=True)
 else:
     st.warning("No history data could be loaded.")
 
@@ -379,3 +396,36 @@ with st.spinner(f"Loading GW{gw_select} picks…"):
     except Exception as e:
         st.error(f"Could not load picks for GW{gw_select}: {e}")
         st.info("This gameweek may not have happened yet, or the manager hadn't made picks.")
+
+st.divider()
+
+# ── League Template ───────────────────────────────────────────────────────────
+st.subheader(f"👥 League Template — GW{current_gw}")
+st.caption("Players owned by the most managers in the league right now")
+
+with st.spinner("Loading squad data for all managers…"):
+    template_counts: dict[int, int] = {}
+    for _, row in standings_df.iterrows():
+        try:
+            picks = get_picks(int(row["entry"]), current_gw)
+            for pick in picks:
+                pid = pick["element"]
+                template_counts[pid] = template_counts.get(pid, 0) + 1
+        except Exception:
+            pass
+
+if template_counts:
+    n_managers = len(standings_df)
+    template_df = (
+        pd.DataFrame(list(template_counts.items()), columns=["id", "Owners"])
+        .merge(players_df[["id", "web_name", "team_name", "position", "now_cost"]], on="id", how="left")
+        .assign(**{"Ownership %": lambda df: (df["Owners"] / n_managers * 100).round(0).astype(int)})
+        .sort_values(["Owners", "Ownership %"], ascending=False)
+        .rename(columns={"web_name": "Player", "team_name": "Club", "position": "Pos", "now_cost": "Price (£m)"})
+        [["Player", "Club", "Pos", "Price (£m)", "Owners", "Ownership %"]]
+        .reset_index(drop=True)
+    )
+    template_df.index += 1
+    st.dataframe(template_df, use_container_width=True)
+else:
+    st.info("Could not load template data for this gameweek.")
