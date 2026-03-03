@@ -417,12 +417,25 @@ with st.spinner("Loading squad data for all managers…"):
 
 if template_counts:
     n_managers = len(standings_df)
-    template_df = (
+    all_template = (
         pd.DataFrame(list(template_counts.items()), columns=["id", "Owners"])
         .merge(players_df[["id", "web_name", "team_name", "position", "now_cost"]], on="id", how="left")
         .assign(**{"Ownership %": lambda df: (df["Owners"] / n_managers * 100).round(0).astype(int)})
-        .sort_values(["Owners", "Ownership %"], ascending=False)
         .rename(columns={"web_name": "Player", "team_name": "Club", "position": "Pos", "now_cost": "Price (£m)"})
+    )
+    pos_quota = {"GKP": 2, "DEF": 5, "MID": 5, "FWD": 3}
+    pos_order = ["GKP", "DEF", "MID", "FWD"]
+    template_df = pd.concat([
+        all_template[all_template["Pos"] == pos]
+        .sort_values("Owners", ascending=False)
+        .head(quota)
+        for pos, quota in pos_quota.items()
+    ])
+    template_df = (
+        template_df
+        .assign(pos_sort=template_df["Pos"].map({p: i for i, p in enumerate(pos_order)}))
+        .sort_values(["pos_sort", "Owners"], ascending=[True, False])
+        .drop(columns="pos_sort")
         [["Player", "Club", "Pos", "Price (£m)", "Owners", "Ownership %"]]
         .reset_index(drop=True)
     )
