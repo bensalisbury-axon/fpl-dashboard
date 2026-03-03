@@ -226,7 +226,7 @@ with st.spinner(f"Loading GW{gw_select} picks…"):
         bench = picks_df[picks_df["multiplier"] == 0].sort_values("lineup_pos")
 
         def format_picks(df: pd.DataFrame) -> pd.DataFrame:
-            out = df[["position", "web_name", "team_name", "now_cost", "multiplier", "is_captain", "is_vice_captain"]].copy()
+            out = df[["position", "web_name", "team_name", "now_cost", "is_captain", "is_vice_captain"]].copy()
             out["Captain"] = out.apply(
                 lambda r: "C" if r["is_captain"] else ("VC" if r["is_vice_captain"] else ""), axis=1
             )
@@ -236,7 +236,6 @@ with st.spinner(f"Loading GW{gw_select} picks…"):
                 "web_name": "Player",
                 "team_name": "Club",
                 "now_cost": "Price (£m)",
-                "multiplier": "Mult",
             })
             return out.reset_index(drop=True)
 
