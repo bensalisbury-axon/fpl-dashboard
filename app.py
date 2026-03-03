@@ -133,7 +133,7 @@ display_df.insert(1, "Move", display_df.apply(movement, axis=1))
 display_df = display_df.drop(columns=["Last GW Rank"])
 
 def highlight_top3(row):
-    colors = {1: "background-color: #FFD700", 2: "background-color: #C0C0C0", 3: "background-color: #CD7F32"}
+    colors = {1: "background-color: #B8860B", 2: "background-color: #C0C0C0", 3: "background-color: #CD7F32"}
     return [colors.get(row["Rank"], "")] * len(row)
 
 st.dataframe(
@@ -187,7 +187,7 @@ if history_rows:
         color="Team",
         markers=True,
         labels={"event": "Gameweek", "overall_rank": "Global Rank"},
-        title="Global Rank Over Time (lower is better)",
+        title="Global Rank Over Time",
     )
     fig_rank.update_layout(
         hovermode="x unified",
@@ -230,7 +230,12 @@ with col2:
 
 with st.spinner(f"Loading GW{gw_select} picks…"):
     try:
-        picks_raw = get_picks(int(manager_map[selected_manager]), int(gw_select))
+        picks_data = _get(f"entry/{int(manager_map[selected_manager])}/event/{int(gw_select)}/picks/")
+        picks_raw = picks_data["picks"]
+        entry_hist = picks_data.get("entry_history", {})
+        squad_value = entry_hist.get("value", 0) / 10
+        bank = entry_hist.get("bank", 0) / 10
+        st.caption(f"Squad value: £{squad_value:.1f}m  |  In bank: £{bank:.1f}m  |  Total: £{squad_value + bank:.1f}m")
         picks_df = pd.DataFrame(picks_raw).rename(columns={"position": "lineup_pos"})
         picks_df = picks_df.merge(
             players_df[["id", "web_name", "team_name", "position", "now_cost"]],
