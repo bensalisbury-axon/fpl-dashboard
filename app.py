@@ -133,7 +133,7 @@ display_df.insert(1, "Move", display_df.apply(movement, axis=1))
 display_df = display_df.drop(columns=["Last GW Rank"])
 
 def highlight_top3(row):
-    colors = {1: "background-color: #B8860B", 2: "background-color: #C0C0C0", 3: "background-color: #CD7F32"}
+    colors = {1: "background-color: #DAA520", 2: "background-color: #C0C0C0", 3: "background-color: #CD7F32"}
     return [colors.get(row["Rank"], "")] * len(row)
 
 st.dataframe(
