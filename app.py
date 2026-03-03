@@ -180,6 +180,22 @@ if history_rows:
     fig_line.update_layout(hovermode="x unified", legend_title_text="Team")
     st.plotly_chart(fig_line, use_container_width=True)
 
+    fig_rank = px.line(
+        all_history,
+        x="event",
+        y="overall_rank",
+        color="Team",
+        markers=True,
+        labels={"event": "Gameweek", "overall_rank": "Global Rank"},
+        title="Global Rank Over Time (lower is better)",
+    )
+    fig_rank.update_layout(
+        hovermode="x unified",
+        legend_title_text="Team",
+        yaxis=dict(autorange="reversed"),
+    )
+    st.plotly_chart(fig_rank, use_container_width=True)
+
     fig_bar = px.bar(
         all_history,
         x="event",
