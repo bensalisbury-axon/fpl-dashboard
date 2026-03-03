@@ -303,17 +303,15 @@ if history_rows:
     fig_bench_bar.update_layout(showlegend=False)
     st.plotly_chart(fig_bench_bar, use_container_width=True)
 
-    fig_bench_line = px.line(
-        all_history,
-        x="event",
-        y="points_on_bench",
-        color="Team",
-        markers=True,
-        labels={"event": "Gameweek", "points_on_bench": "Bench Points"},
-        title="Points on Bench per Gameweek",
+    bench_leaderboard = (
+        all_history[["Team", "Manager", "event", "points_on_bench"]]
+        .rename(columns={"event": "GW", "points_on_bench": "Bench Points"})
+        .sort_values("Bench Points", ascending=False)
+        .head(20)
+        .reset_index(drop=True)
     )
-    fig_bench_line.update_layout(hovermode="x unified", legend_title_text="Team")
-    st.plotly_chart(fig_bench_line, use_container_width=True)
+    bench_leaderboard.index += 1
+    st.dataframe(bench_leaderboard, use_container_width=True)
 else:
     st.warning("No history data could be loaded.")
 
