@@ -192,7 +192,7 @@ if history_rows:
         index="Team", columns="event", values="points", aggfunc="sum"
     )
     pivot.columns = [f"GW{c}" for c in pivot.columns]
-    st.dataframe(pivot.style.background_gradient(cmap="RdYlGn", axis=None), use_container_width=True)
+    st.dataframe(pivot, use_container_width=True)
 else:
     st.warning("No history data could be loaded.")
 
