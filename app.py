@@ -307,7 +307,7 @@ if history_rows:
         all_history[["Team", "Manager", "event", "points_on_bench"]]
         .rename(columns={"event": "GW", "points_on_bench": "Bench Points"})
         .sort_values("Bench Points", ascending=False)
-        .head(20)
+        .head(10)
         .reset_index(drop=True)
     )
     bench_leaderboard.index += 1
