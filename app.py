@@ -321,12 +321,13 @@ if history_rows:
     st.dataframe(bench_leaderboard, use_container_width=True)
 
     st.subheader("🏅 Best & Worst Gameweeks")
+    finished_history = all_history[all_history["event"] < current_gw]
     idx_best = all_history.groupby("Team")["points"].idxmax()
-    idx_worst = all_history.groupby("Team")["points"].idxmin()
+    idx_worst = finished_history.groupby("Team")["points"].idxmin()
     best = all_history.loc[idx_best, ["Team", "Manager", "event", "points"]].rename(
         columns={"event": "Best GW", "points": "Best Pts"}
     )
-    worst = all_history.loc[idx_worst, ["Team", "event", "points"]].rename(
+    worst = finished_history.loc[idx_worst, ["Team", "event", "points"]].rename(
         columns={"event": "Worst GW", "points": "Worst Pts"}
     )
     bw_df = (
