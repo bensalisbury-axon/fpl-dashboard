@@ -196,11 +196,11 @@ with st.spinner("Loading captain selections…"):
             for pick in picks:
                 if pick["is_captain"]:
                     captain_name = player_id_to_name.get(pick["element"], "Unknown")
+                    label = f"{captain_name} (TC)" if pick["multiplier"] == 3 else captain_name
                     captain_rows.append({
                         "Team": row["entry_name"],
                         "Manager": row["player_name"],
-                        "Captain": captain_name,
-                        "Triple Captain": "✓" if pick["multiplier"] == 3 else "",
+                        "Captain": label,
                     })
                     break
         except Exception:
