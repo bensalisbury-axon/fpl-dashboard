@@ -78,6 +78,10 @@ with st.spinner("Loading league data…"):
         st.error(f"Failed to load data: {e}")
         st.stop()
 
+# Remove managers who can no longer access their account
+EXCLUDED_MANAGERS = {"poojstar"}
+standings_df = standings_df[~standings_df["player_name"].str.lower().isin(EXCLUDED_MANAGERS)]
+
 # Players lookup table
 players_raw = pd.DataFrame(bootstrap["elements"])[
     ["id", "web_name", "team", "element_type", "now_cost"]
