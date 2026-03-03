@@ -433,9 +433,7 @@ if template_counts:
     ])
     template_df = (
         template_df
-        .assign(pos_sort=template_df["Pos"].map({p: i for i, p in enumerate(pos_order)}))
-        .sort_values(["pos_sort", "Owners"], ascending=[True, False])
-        .drop(columns="pos_sort")
+        .sort_values("Owners", ascending=False)
         [["Player", "Club", "Pos", "Price (£m)", "Owners", "Ownership %"]]
         .reset_index(drop=True)
     )
