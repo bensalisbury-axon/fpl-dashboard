@@ -142,8 +142,15 @@ def highlight_top3(row):
     colors = {1: "background-color: #DAA520", 2: "background-color: #C0C0C0", 3: "background-color: #CD7F32"}
     return [colors.get(row["Rank"], "")] * len(row)
 
+def colour_move(val):
+    if str(val).startswith("▲"):
+        return "color: #2ECC71; font-weight: bold"
+    elif str(val).startswith("▼"):
+        return "color: #E74C3C; font-weight: bold"
+    return ""
+
 st.dataframe(
-    display_df.style.apply(highlight_top3, axis=1),
+    display_df.style.apply(highlight_top3, axis=1).map(colour_move, subset=["Move"]),
     use_container_width=True,
     hide_index=True,
 )
