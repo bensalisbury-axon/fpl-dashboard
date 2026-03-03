@@ -50,6 +50,12 @@ def get_picks(entry_id: int, gw: int) -> list:
     return data["picks"]
 
 
+@st.cache_data(ttl=300)
+def get_manager_transfers(entry_id: int) -> pd.DataFrame:
+    data = _get(f"entry/{entry_id}/transfers/")
+    return pd.DataFrame(data) if data else pd.DataFrame()
+
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="FPL League Dashboard",
@@ -144,6 +150,70 @@ st.dataframe(
 
 st.divider()
 
+# ── Transfer News ─────────────────────────────────────────────────────────────
+st.subheader(f"🔄 Transfer News — GW{current_gw}")
+
+player_id_to_name = players_df.set_index("id")["web_name"].to_dict()
+
+with st.spinner("Loading transfer activity…"):
+    transfer_rows = []
+    for _, row in standings_df.iterrows():
+        try:
+            transfers = get_manager_transfers(int(row["entry"]))
+            if not transfers.empty and "event" in transfers.columns:
+                gw_transfers = transfers[transfers["event"] == current_gw].copy()
+                if not gw_transfers.empty:
+                    gw_transfers["Team"] = row["entry_name"]
+                    gw_transfers["Manager"] = row["player_name"]
+                    transfer_rows.append(gw_transfers)
+        except Exception:
+            pass
+
+if transfer_rows:
+    all_transfers = pd.concat(transfer_rows, ignore_index=True)
+    all_transfers["Transferred Out"] = all_transfers["element_out"].map(player_id_to_name)
+    all_transfers["Transferred In"] = all_transfers["element_in"].map(player_id_to_name)
+    all_transfers["Bought For"] = all_transfers["element_in_cost"].apply(lambda x: f"£{x/10:.1f}m")
+    all_transfers["Sold For"] = all_transfers["element_out_cost"].apply(lambda x: f"£{x/10:.1f}m")
+    st.dataframe(
+        all_transfers[["Team", "Manager", "Transferred Out", "Sold For", "Transferred In", "Bought For"]],
+        use_container_width=True,
+        hide_index=True,
+    )
+else:
+    st.info(f"No transfers made in GW{current_gw} yet.")
+
+st.divider()
+
+# ── Captain Choices ───────────────────────────────────────────────────────────
+st.subheader(f"🎖️ Captain Choices — GW{current_gw}")
+
+with st.spinner("Loading captain selections…"):
+    captain_rows = []
+    for _, row in standings_df.iterrows():
+        try:
+            picks = get_picks(int(row["entry"]), current_gw)
+            for pick in picks:
+                if pick["is_captain"]:
+                    captain_name = player_id_to_name.get(pick["element"], "Unknown")
+                    captain_rows.append({
+                        "Team": row["entry_name"],
+                        "Manager": row["player_name"],
+                        "Captain": captain_name,
+                        "Triple Captain": "✓" if pick["multiplier"] == 3 else "",
+                    })
+                    break
+        except Exception:
+            pass
+
+if captain_rows:
+    captains_df = pd.DataFrame(captain_rows)
+    st.dataframe(captains_df, use_container_width=True, hide_index=True)
+else:
+    st.info("Captain data not available yet for this gameweek.")
+
+st.divider()
+
 # ── Points Over Time ──────────────────────────────────────────────────────────
 st.subheader("📈 Points Over Time")
 
@@ -213,6 +283,37 @@ if history_rows:
     )
     pivot.columns = [f"GW{c}" for c in pivot.columns]
     st.dataframe(pivot, use_container_width=True)
+
+    st.subheader("🪑 Points Left on Bench")
+    bench_total = (
+        all_history.groupby("Team")["points_on_bench"]
+        .sum()
+        .reset_index()
+        .rename(columns={"points_on_bench": "Total Bench Points"})
+        .sort_values("Total Bench Points", ascending=False)
+    )
+    fig_bench_bar = px.bar(
+        bench_total,
+        x="Team",
+        y="Total Bench Points",
+        color="Team",
+        title="Total Points Left on Bench (Season)",
+        labels={"Total Bench Points": "Points"},
+    )
+    fig_bench_bar.update_layout(showlegend=False)
+    st.plotly_chart(fig_bench_bar, use_container_width=True)
+
+    fig_bench_line = px.line(
+        all_history,
+        x="event",
+        y="points_on_bench",
+        color="Team",
+        markers=True,
+        labels={"event": "Gameweek", "points_on_bench": "Bench Points"},
+        title="Points on Bench per Gameweek",
+    )
+    fig_bench_line.update_layout(hovermode="x unified", legend_title_text="Team")
+    st.plotly_chart(fig_bench_line, use_container_width=True)
 else:
     st.warning("No history data could be loaded.")
 
