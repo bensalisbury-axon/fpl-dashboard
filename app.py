@@ -454,3 +454,9 @@ if template_counts:
     st.dataframe(template_df, use_container_width=True, height=35 * 15 + 38)
 else:
     st.info("Could not load template data for this gameweek.")
+
+st.divider()
+
+# ── Insights ──────────────────────────────────────────────────────────────────
+st.subheader("💡 Insights")
+st.info("There's nothing you can do, Ben is going to win.")
