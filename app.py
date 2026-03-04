@@ -358,12 +358,9 @@ st.divider()
 # ── Squad Picks ───────────────────────────────────────────────────────────────
 st.subheader("👕 Squad Picks")
 
-col1, col2 = st.columns([2, 1])
-with col1:
-    manager_map = dict(zip(standings_df["player_name"], standings_df["entry"]))
-    selected_manager = st.selectbox("Select a manager", list(manager_map.keys()))
-with col2:
-    gw_select = st.number_input("Gameweek", min_value=1, max_value=38, value=current_gw, step=1)
+manager_map = dict(zip(standings_df["player_name"], standings_df["entry"]))
+selected_manager = st.selectbox("Select a manager", list(manager_map.keys()))
+gw_select = st.number_input("Gameweek", min_value=1, max_value=38, value=current_gw, step=1)
 
 with st.spinner(f"Loading GW{gw_select} picks…"):
     try:
