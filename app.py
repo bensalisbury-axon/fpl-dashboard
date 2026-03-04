@@ -253,11 +253,16 @@ if history_rows:
         (all_history["event"] >= gw_range[0]) & (all_history["event"] <= gw_range[1])
     ]
 
+    teams_ordered = all_history["Team"].unique().tolist()
+    colour_map = {team: px.colors.qualitative.Plotly[i % len(px.colors.qualitative.Plotly)]
+                  for i, team in enumerate(teams_ordered)}
+
     fig_line = px.line(
         filtered_history,
         x="event",
         y="total_points",
         color="Team",
+        color_discrete_map=colour_map,
         markers=True,
         labels={"event": "Gameweek", "total_points": "Cumulative Points"},
         title="Cumulative Points by Gameweek",
@@ -270,6 +275,7 @@ if history_rows:
         x="event",
         y="overall_rank",
         color="Team",
+        color_discrete_map=colour_map,
         markers=True,
         labels={"event": "Gameweek", "overall_rank": "Global Rank"},
         title="Global Rank Over Time",
@@ -292,6 +298,7 @@ if history_rows:
         x="event",
         y="League Position",
         color="Team",
+        color_discrete_map=colour_map,
         markers=True,
         labels={"event": "Gameweek"},
         title="Mini-League Position Over Time",
