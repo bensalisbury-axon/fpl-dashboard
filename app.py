@@ -222,6 +222,13 @@ st.divider()
 # ── Points Over Time ──────────────────────────────────────────────────────────
 st.subheader("📈 Points Over Time")
 
+gw_range = st.slider(
+    "Gameweek range",
+    min_value=1,
+    max_value=current_gw,
+    value=(1, current_gw),
+)
+
 with st.spinner("Fetching GW history for all managers…"):
     history_rows = []
     errors = []
@@ -242,9 +249,12 @@ if errors:
 
 if history_rows:
     all_history = pd.concat(history_rows, ignore_index=True)
+    filtered_history = all_history[
+        (all_history["event"] >= gw_range[0]) & (all_history["event"] <= gw_range[1])
+    ]
 
     fig_line = px.line(
-        all_history,
+        filtered_history,
         x="event",
         y="total_points",
         color="Team",
@@ -256,7 +266,7 @@ if history_rows:
     st.plotly_chart(fig_line, use_container_width=True)
 
     fig_rank = px.line(
-        all_history,
+        filtered_history,
         x="event",
         y="overall_rank",
         color="Team",
@@ -272,7 +282,7 @@ if history_rows:
     st.plotly_chart(fig_rank, use_container_width=True)
 
     fig_bar = px.bar(
-        all_history,
+        filtered_history,
         x="event",
         y="points",
         color="Team",
@@ -283,7 +293,7 @@ if history_rows:
     fig_bar.update_layout(legend_title_text="Team")
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    pivot = all_history.pivot_table(
+    pivot = filtered_history.pivot_table(
         index="Team", columns="event", values="points", aggfunc="sum"
     )
     pivot.columns = [f"GW{c}" for c in pivot.columns]
