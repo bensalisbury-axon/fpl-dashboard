@@ -281,17 +281,27 @@ if history_rows:
     )
     st.plotly_chart(fig_rank, use_container_width=True)
 
-    fig_bar = px.bar(
-        filtered_history,
-        x="event",
-        y="points",
-        color="Team",
-        barmode="group",
-        labels={"event": "Gameweek", "points": "GW Points"},
-        title="Points per Gameweek",
+    league_pos = (
+        filtered_history.pivot_table(index="event", columns="Team", values="total_points")
+        .rank(axis=1, ascending=False, method="min")
+        .reset_index()
+        .melt(id_vars="event", var_name="Team", value_name="League Position")
     )
-    fig_bar.update_layout(legend_title_text="Team")
-    st.plotly_chart(fig_bar, use_container_width=True)
+    fig_league_pos = px.line(
+        league_pos,
+        x="event",
+        y="League Position",
+        color="Team",
+        markers=True,
+        labels={"event": "Gameweek"},
+        title="Mini-League Position Over Time",
+    )
+    fig_league_pos.update_layout(
+        hovermode="x unified",
+        legend_title_text="Team",
+        yaxis=dict(autorange="reversed", dtick=1),
+    )
+    st.plotly_chart(fig_league_pos, use_container_width=True)
 
     pivot = filtered_history.pivot_table(
         index="Team", columns="event", values="points", aggfunc="sum"
