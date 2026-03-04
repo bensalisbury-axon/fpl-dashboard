@@ -399,7 +399,7 @@ with st.spinner(f"Loading GW{gw_select} picks…"):
             return out.reset_index(drop=True)
 
         st.markdown("**Starting XI**")
-        st.dataframe(format_picks(starting_xi), use_container_width=True, hide_index=True)
+        st.dataframe(format_picks(starting_xi), use_container_width=True, hide_index=True, height=35 * 11 + 38)
 
         st.markdown("**Bench**")
         st.dataframe(format_picks(bench), use_container_width=True, hide_index=True)
