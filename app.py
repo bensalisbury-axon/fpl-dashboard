@@ -115,13 +115,12 @@ current_gw = int(current_row["id"].iloc[-1]) if not current_row.empty else 1
 st.subheader(f"🏆 Standings after GW{current_gw}")
 
 display_df = (
-    standings_df[["rank", "last_rank", "entry_name", "player_name", "total", "event_total"]]
+    standings_df[["rank", "last_rank", "entry_name", "total", "event_total"]]
     .copy()
     .rename(columns={
         "rank": "Rank",
         "last_rank": "Last GW Rank",
         "entry_name": "Team",
-        "player_name": "Manager",
         "total": "Total Pts",
         "event_total": f"GW{current_gw} Pts",
     })
@@ -183,7 +182,7 @@ if transfer_rows:
     all_transfers["Bought For"] = all_transfers["element_in_cost"].apply(lambda x: f"£{x/10:.1f}m")
     all_transfers["Sold For"] = all_transfers["element_out_cost"].apply(lambda x: f"£{x/10:.1f}m")
     st.dataframe(
-        all_transfers[["Team", "Manager", "Transferred Out", "Sold For", "Transferred In", "Bought For"]],
+        all_transfers[["Team", "Transferred Out", "Sold For", "Transferred In", "Bought For"]],
         use_container_width=True,
         hide_index=True,
     )
@@ -206,7 +205,6 @@ with st.spinner("Loading captain selections…"):
                     label = f"{captain_name} (TC)" if pick["multiplier"] == 3 else captain_name
                     captain_rows.append({
                         "Team": row["entry_name"],
-                        "Manager": row["player_name"],
                         "Captain": label,
                     })
                     break
@@ -311,7 +309,7 @@ if history_rows:
     st.plotly_chart(fig_bench_bar, use_container_width=True)
 
     bench_leaderboard = (
-        all_history[["Team", "Manager", "event", "points_on_bench"]]
+        all_history[["Team", "event", "points_on_bench"]]
         .rename(columns={"event": "GW", "points_on_bench": "Bench Points"})
         .sort_values("Bench Points", ascending=False)
         .head(10)
@@ -324,7 +322,7 @@ if history_rows:
     finished_history = all_history[all_history["event"] < current_gw]
     idx_best = all_history.groupby("Team")["points"].idxmax()
     idx_worst = finished_history.groupby("Team")["points"].idxmin()
-    best = all_history.loc[idx_best, ["Team", "Manager", "event", "points"]].rename(
+    best = all_history.loc[idx_best, ["Team", "event", "points"]].rename(
         columns={"event": "Best GW", "points": "Best Pts"}
     )
     worst = finished_history.loc[idx_worst, ["Team", "event", "points"]].rename(
