@@ -335,7 +335,11 @@ if history_rows:
         .reset_index(drop=True)
     )
     bw_df.index += 1
-    st.dataframe(bw_df, use_container_width=True)
+    st.dataframe(
+        bw_df,
+        use_container_width=True,
+        column_config={"Team": st.column_config.Column(pinned=True)},
+    )
 else:
     st.warning("No history data could be loaded.")
 
