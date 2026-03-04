@@ -45,6 +45,12 @@ def get_manager_history(entry_id: int) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=300)
+def get_manager_chips(entry_id: int) -> list:
+    data = _get(f"entry/{entry_id}/history/")
+    return data.get("chips", [])
+
+
+@st.cache_data(ttl=300)
 def get_picks(entry_id: int, gw: int) -> list:
     data = _get(f"entry/{entry_id}/event/{gw}/picks/")
     return data["picks"]
@@ -232,6 +238,8 @@ gw_range = st.slider(
 with st.spinner("Fetching GW history for all managers…"):
     history_rows = []
     errors = []
+    chip_rows = []
+    chip_label_map = {"wildcard": "WC", "bboost": "BB", "freehit": "FH", "3xc": "TC"}
     for _, row in standings_df.iterrows():
         try:
             hist = get_manager_history(int(row["entry"]))
@@ -239,6 +247,10 @@ with st.spinner("Fetching GW history for all managers…"):
             hist["Manager"] = row["player_name"]
             hist["Team"] = row["entry_name"]
             history_rows.append(hist)
+            for chip in get_manager_chips(int(row["entry"])):
+                label = chip_label_map.get(chip["name"])
+                if label:
+                    chip_rows.append({"Team": row["entry_name"], "event": chip["event"], "chip": label})
         except Exception as e:
             errors.append(f"{row['player_name']}: {e}")
 
@@ -305,6 +317,25 @@ if history_rows:
         legend_title_text="Team",
         yaxis=dict(autorange="reversed", dtick=1),
     )
+    if chip_rows:
+        chips_df = pd.DataFrame(chip_rows)
+        chips_df = chips_df[
+            (chips_df["event"] >= gw_range[0]) & (chips_df["event"] <= gw_range[1])
+        ]
+        chips_df = chips_df.merge(
+            league_pos[["event", "Team", "League Position"]], on=["event", "Team"], how="left"
+        )
+        import plotly.graph_objects as go
+        fig_league_pos.add_trace(go.Scatter(
+            x=chips_df["event"],
+            y=chips_df["League Position"],
+            mode="text",
+            text=["<b>" + c + "</b>" for c in chips_df["chip"]],
+            textposition="top center",
+            textfont=dict(size=12),
+            showlegend=False,
+            hoverinfo="skip",
+        ))
     st.plotly_chart(fig_league_pos, use_container_width=True)
 
     pivot = filtered_history.pivot_table(
