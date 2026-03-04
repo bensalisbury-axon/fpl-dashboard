@@ -306,6 +306,7 @@ if history_rows:
         labels={"Total Bench Points": "Points"},
     )
     fig_bench_bar.update_layout(showlegend=False)
+    fig_bench_bar.update_traces(texttemplate="%{y}", textposition="outside")
     st.plotly_chart(fig_bench_bar, use_container_width=True)
 
     bench_leaderboard = (
