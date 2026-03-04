@@ -434,10 +434,10 @@ if template_counts:
     template_df = (
         template_df
         .sort_values("Owners", ascending=False)
-        [["Player", "Club", "Pos", "Price (£m)", "Owners", "Ownership %"]]
+        [["Player", "Club", "Pos", "Price (£m)", "Ownership %"]]
         .reset_index(drop=True)
     )
     template_df.index += 1
-    st.dataframe(template_df, use_container_width=True)
+    st.dataframe(template_df, use_container_width=True, height=35 * 15 + 38)
 else:
     st.info("Could not load template data for this gameweek.")
