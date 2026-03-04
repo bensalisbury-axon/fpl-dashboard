@@ -277,7 +277,7 @@ if history_rows:
         title="Cumulative Points by Gameweek",
     )
     fig_line.update_layout(hovermode="x unified", legend_title_text="Team")
-    st.plotly_chart(fig_line, use_container_width=True)
+    st.plotly_chart(fig_line, use_container_width=True, config={"staticPlot": True})
 
     fig_rank = px.line(
         filtered_history,
@@ -293,7 +293,7 @@ if history_rows:
         legend_title_text="Team",
         yaxis=dict(autorange="reversed"),
     )
-    st.plotly_chart(fig_rank, use_container_width=True)
+    st.plotly_chart(fig_rank, use_container_width=True, config={"staticPlot": True})
 
     league_pos = (
         filtered_history.pivot_table(index="event", columns="Team", values="total_points")
@@ -336,7 +336,7 @@ if history_rows:
             showlegend=False,
             hoverinfo="skip",
         ))
-    st.plotly_chart(fig_league_pos, use_container_width=True)
+    st.plotly_chart(fig_league_pos, use_container_width=True, config={"staticPlot": True})
 
     pivot = filtered_history.pivot_table(
         index="Team", columns="event", values="points", aggfunc="sum"
@@ -362,7 +362,7 @@ if history_rows:
     )
     fig_bench_bar.update_layout(showlegend=False)
     fig_bench_bar.update_traces(texttemplate="%{y}", textposition="inside", textfont_color="black")
-    st.plotly_chart(fig_bench_bar, use_container_width=True)
+    st.plotly_chart(fig_bench_bar, use_container_width=True, config={"staticPlot": True})
 
     bench_leaderboard = (
         all_history[["Team", "event", "points_on_bench"]]
